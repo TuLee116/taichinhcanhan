@@ -1,4 +1,5 @@
-// Máy chủ đồng bộ cho Sổ Cá Nhân.
+// Máy chủ cho Sổ Cá Nhân: phục vụ app (index.html, sw.js, icons, fonts) và đồng bộ dữ liệu.
+// Chạy từ thư mục gốc repo: npm start  (Railway: Root Directory để trống).
 //
 // Giao thức (khớp với syncNow() trong index.html):
 //   POST /sync   Authorization: Bearer <SYNC_TOKEN>
@@ -14,6 +15,10 @@
 
 import http from 'node:http';
 import crypto from 'node:crypto';
+import fs from 'node:fs';
+import path from 'node:path';
+import zlib from 'node:zlib';
+import { fileURLToPath } from 'node:url';
 import pg from 'pg';
 
 const { DATABASE_URL, SYNC_TOKEN } = process.env;
@@ -28,7 +33,7 @@ const LOCK_KEY = 7310524;            // khoá để các lần đồng bộ ch�
 
 if (!DATABASE_URL) fatal('Thiếu DATABASE_URL.');
 if (!SYNC_TOKEN || SYNC_TOKEN.length < 32) fatal('SYNC_TOKEN phải có ít nhất 32 ký tự.');
-if (!ALLOWED.length) console.warn('[cảnh báo] Chưa đặt ALLOWED_ORIGINS – mọi trang web đều gọi được (vẫn cần đúng mã truy cập).');
+if (!ALLOWED.length) console.warn('[cảnh báo] Chưa đặt ALLOWED_ORIGINS – trang web khác cũng gọi được /sync (vẫn cần đúng mã). App cùng địa chỉ luôn được phép.');
 
 function fatal(msg) { console.error('[lỗi] ' + msg); process.exit(1); }
 
@@ -79,10 +84,65 @@ function noteFail(ip) {
 }
 setInterval(() => { const now = Date.now(); for (const [ip, f] of fails) if (now > f.until) fails.delete(ip); }, FAIL_WINDOW).unref();
 
+// ---- Phục vụ app (các tệp ở thư mục gốc repo) ----
+// Chỉ nạp đúng các tệp của app vào bộ nhớ khi khởi động; không phục vụ mã server, .git hay tệp khác.
+const STATIC_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const STATIC_RE = /^(index\.html|sw\.js|manifest\.webmanifest|icons\/[\w.-]+\.png|fonts\/[\w.-]+\.(?:woff2|txt))$/;
+const TYPES = {
+  '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
+  '.webmanifest': 'application/manifest+json; charset=utf-8', '.png': 'image/png',
+  '.woff2': 'font/woff2', '.txt': 'text/plain; charset=utf-8',
+};
+const STATIC = new Map(); // '/đường-dẫn' -> { buf, gz, type, etag, cache }
+function loadStatic() {
+  const walk = (dir, rel = '') => {
+    for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
+      const r = rel ? rel + '/' + ent.name : ent.name;
+      if (ent.isDirectory()) { if (ent.name === 'icons' || ent.name === 'fonts') walk(path.join(dir, ent.name), r); continue; }
+      if (!STATIC_RE.test(r)) continue;
+      const buf = fs.readFileSync(path.join(dir, ent.name));
+      const ext = path.extname(r), type = TYPES[ext];
+      const compress = ['.html', '.js', '.webmanifest', '.txt'].includes(ext);
+      STATIC.set('/' + r, {
+        buf, type,
+        gz: compress ? zlib.gzipSync(buf, { level: 9 }) : null,
+        etag: '"' + crypto.createHash('sha1').update(buf).digest('base64url').slice(0, 20) + '"',
+        // Trang, sw.js, manifest: luôn hỏi lại để nhận bản mới; icon/font: cho lưu 7 ngày.
+        cache: ['.png', '.woff2'].includes(ext) ? 'public, max-age=604800' : 'no-cache',
+      });
+    }
+  };
+  if (fs.existsSync(path.join(STATIC_ROOT, 'index.html'))) walk(STATIC_ROOT);
+  if (STATIC.has('/index.html')) STATIC.set('/', STATIC.get('/index.html'));
+  console.log(STATIC.size ? `Phục vụ app: ${STATIC.size - 1} tệp` : 'Không thấy index.html – chỉ chạy đồng bộ.');
+}
+loadStatic();
+
+function serveStatic(req, res, p) {
+  const f = STATIC.get(p);
+  if (!f) return false;
+  const headers = {
+    'Content-Type': f.type, 'Cache-Control': f.cache, ETag: f.etag,
+    'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'strict-origin-when-cross-origin', Vary: 'Accept-Encoding',
+  };
+  if (req.headers['if-none-match'] === f.etag) { res.writeHead(304, headers); res.end(); return true; }
+  const gzip = f.gz && /\bgzip\b/.test(req.headers['accept-encoding'] || '');
+  const body = gzip ? f.gz : f.buf;
+  if (gzip) headers['Content-Encoding'] = 'gzip';
+  headers['Content-Length'] = body.length;
+  res.writeHead(200, headers);
+  res.end(req.method === 'HEAD' ? undefined : body);
+  return true;
+}
+
 // ---- HTTP ----
 function cors(req, res) {
   const origin = req.headers.origin;
   if (!origin) return true;
+  // App chạy cùng địa chỉ với server thì luôn được phép.
+  let sameHost = false;
+  try { sameHost = new URL(origin).host === String(req.headers['x-forwarded-host'] || req.headers.host || ''); } catch { }
+  if (sameHost) return true;
   const ok = !ALLOWED.length || ALLOWED.includes(origin.replace(/\/+$/, ''));
   if (!ok) return false;
   res.setHeader('Access-Control-Allow-Origin', ALLOWED.length ? origin : '*');
@@ -186,17 +246,20 @@ async function doSync({ device, since, ops }) {
 
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://x');
-  const path = url.pathname.replace(/\/+$/, '') || '/';
+  const p = url.pathname.replace(/\/+$/, '') || '/';
   try {
+    // Tệp của app: không cần CORS (trình duyệt tải trực tiếp).
+    if ((req.method === 'GET' || req.method === 'HEAD') && serveStatic(req, res, url.pathname)) return;
+
     if (!cors(req, res)) return send(res, 403, { error: 'Địa chỉ app không được phép' });
     if (req.method === 'OPTIONS') { res.writeHead(204); return res.end(); }
 
-    if (req.method === 'GET' && (path === '/' || path === '/health')) {
+    if (req.method === 'GET' && (p === '/health' || (p === '/' && !STATIC.size))) {
       await pool.query('SELECT 1');
       return send(res, 200, { ok: true, service: 'so-ca-nhan-sync' });
     }
 
-    if (req.method === 'POST' && path === '/sync') {
+    if (req.method === 'POST' && p === '/sync') {
       // Đúng mã thì luôn cho qua; chỉ chặn các lần thử sai, để người dò mã không khoá được chủ thật.
       if (!tokenOk(req)) {
         const ip = clientIp(req);

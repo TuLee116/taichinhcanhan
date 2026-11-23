@@ -2,7 +2,7 @@
  * Lưu giao diện để app chạy được khi không có mạng.
  * Khi phát hành bản mới: tăng VERSION để máy người dùng tải lại bộ đệm.
  */
-const VERSION = '1.0.1';
+const VERSION = '1.0.2';
 const APP_CACHE = 'so-ca-nhan-app-' + VERSION;
 
 const PRECACHE = [
@@ -51,6 +51,8 @@ self.addEventListener('fetch', event => {
   if (url.pathname.endsWith('/sw.js')) return;
   // Tệp người dùng tải lên phục vụ qua /_blob/ – không lưu đệm.
   if (url.pathname.includes('/_blob/')) return;
+  // API của máy chủ đồng bộ – luôn đi thẳng mạng.
+  if (url.pathname === '/health' || url.pathname.startsWith('/sync')) return;
 
   if (req.mode === 'navigate') {
     event.respondWith(pageNetworkFirst(req));
@@ -65,7 +67,11 @@ async function pageNetworkFirst(req) {
   const cache = await caches.open(APP_CACHE);
   try {
     const res = await withTimeout(fetch(req), 4000);
-    if (res && res.ok) cache.put('./index.html', res.clone());
+    // Chỉ nhận trang HTML; máy chủ trả thứ khác (JSON lỗi, trang bảo trì…) thì dùng bản đã lưu.
+    const isHtml = res && res.ok && (res.headers.get('content-type') || '').includes('text/html');
+    if (isHtml) { cache.put('./index.html', res.clone()); return res; }
+    const saved = await cache.match('./index.html');
+    if (saved) return saved;
     return res;
   } catch (e) {
     return (await cache.match('./index.html')) || (await cache.match('./')) ||
