@@ -2,9 +2,8 @@
  * Lưu giao diện để app chạy được khi không có mạng.
  * Khi phát hành bản mới: tăng VERSION để máy người dùng tải lại bộ đệm.
  */
-const VERSION = '1.0.0';
+const VERSION = '1.0.1';
 const APP_CACHE = 'so-ca-nhan-app-' + VERSION;
-const FONT_CACHE = 'so-ca-nhan-fonts-v1';
 
 const PRECACHE = [
   './',
@@ -15,7 +14,10 @@ const PRECACHE = [
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/maskable-192.png',
-  './icons/maskable-512.png'
+  './icons/maskable-512.png',
+  './fonts/montserrat-vietnamese.woff2',
+  './fonts/montserrat-latin-ext.woff2',
+  './fonts/montserrat-latin.woff2'
 ];
 
 // Không tự skipWaiting: app hiện thanh "Có bản mới" và gửi 'skip' khi người dùng bấm.
@@ -27,7 +29,7 @@ self.addEventListener('install', event => {
 
 self.addEventListener('activate', event => {
   event.waitUntil((async () => {
-    const keep = new Set([APP_CACHE, FONT_CACHE]);
+    const keep = new Set([APP_CACHE]);
     for (const k of await caches.keys()) if (k.startsWith('so-ca-nhan-') && !keep.has(k)) await caches.delete(k);
     await self.clients.claim();
   })());
@@ -41,12 +43,6 @@ self.addEventListener('fetch', event => {
   const req = event.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
-
-  // Google Fonts: dùng bản đã lưu nếu có.
-  if (url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com') {
-    event.respondWith(fontCache(req));
-    return;
-  }
 
   // Các yêu cầu ra ngoài khác (vd. máy chủ đồng bộ) đi thẳng mạng.
   if (url.origin !== self.location.origin) return;
@@ -88,19 +84,6 @@ async function staleWhileRevalidate(req, event) {
   }).catch(() => null);
   if (cached) { event.waitUntil(network); return cached; }
   return (await network) || new Response('', { status: 504 });
-}
-
-async function fontCache(req) {
-  const cache = await caches.open(FONT_CACHE);
-  const cached = await cache.match(req);
-  if (cached) return cached;
-  try {
-    const res = await fetch(req);
-    if (res && (res.ok || res.type === 'opaque')) cache.put(req, res.clone());
-    return res;
-  } catch (e) {
-    return new Response('', { status: 504 });
-  }
 }
 
 function withTimeout(p, ms) {
