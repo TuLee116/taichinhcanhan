@@ -57,6 +57,13 @@ Làm **một lần trên mỗi thiết bị**:
 
 **Chuyển dữ liệu cũ từ bản trong Claude (nếu có):** mở bản trong Claude → nút trạng thái → **Tải tệp sao lưu (.json)** → mở app Railway → nút trạng thái → **Khôi phục từ tệp** → dữ liệu tự đồng bộ lên máy chủ.
 
+## 3a. Chọn ngân hàng có logo chuẩn (từ bản 1.15.0)
+Tài chính → Tài khoản → **+ Thêm tài khoản** (hoặc **Sửa**) → Loại **Ngân hàng / Thẻ tín dụng / Ví điện tử** → ô **Ngân hàng / ví điện tử**:
+- Gõ **mã** (`VCB`, `MB`, `NCB`, `TCB`…), **tên** (`Techcombank`), **tên không dấu** (`ngoai thuong`, `quan doi`) hoặc **mã BIN** (`970436`) → chọn trong danh sách (↑ ↓ Enter hoặc bấm).
+- App tự điền **tên**, **ký hiệu** và **logo chuẩn**; logo lưu cùng tài khoản nên máy khác cũng thấy, kể cả khi mất mạng.
+- Danh sách 76 ngân hàng & ví (MoMo, ZaloPay, ViettelMoney, VNPT Money) lấy từ **VietQR** (`api.vietqr.io/v2/banks`), logo đóng gói sẵn trong `assets/banks/` – không gọi máy chủ bên ngoài.
+- Cập nhật danh sách: tải lại từ VietQR → thay `assets/banks.json` và ảnh trong `assets/banks/`.
+
 ## 3b. Reset toàn bộ dữ liệu (từ bản 1.14.0)
 Dùng khi muốn **bắt đầu lại từ đầu** (VD bàn giao app cho khách, xoá dữ liệu thử): nút trạng thái → ⚙️ **Ứng dụng & dữ liệu** → **🧹 Reset dữ liệu** → **Reset toàn bộ dữ liệu…**
 - Đã bật tài khoản: phải **xác thực lại** (vân tay / Face ID hoặc mật khẩu).

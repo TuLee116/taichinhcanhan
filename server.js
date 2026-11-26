@@ -27,6 +27,7 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.json': 'application/json;
 const PUBLIC = ['index.html', 'sw.js', 'manifest.webmanifest'];
 try { fs.readdirSync(path.join(ROOT, 'icons')).forEach(f => PUBLIC.push('icons/' + f)); } catch (e) { }
 try { fs.readdirSync(path.join(ROOT, 'assets')).filter(f => /\.(webp|png|jpg|svg|json)$/.test(f)).forEach(f => PUBLIC.push('assets/' + f)); } catch (e) { } // ảnh nền đăng nhập
+try { fs.readdirSync(path.join(ROOT, 'assets', 'banks')).filter(f => /^[A-Za-z0-9_-]+\.png$/.test(f)).forEach(f => PUBLIC.push('assets/banks/' + f)); } catch (e) { } // logo ngân hàng / ví (nguồn VietQR)
 const FILES = new Map(); // nạp sẵn vào bộ nhớ + nén gzip một lần
 for (const rel of PUBLIC) {
   const ext = path.extname(rel), buf = fs.readFileSync(path.join(ROOT, rel));

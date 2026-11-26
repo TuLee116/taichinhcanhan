@@ -8,8 +8,8 @@
 <meta name="theme-color" content="#1e2a5e">
 <script>/* giao diện & ngôn ngữ đã chọn – áp dụng trước khi vẽ trang */try{var _t=localStorage.getItem('scn-theme')||'light',_d=_t==='dark'||(_t==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.theme=_d?'dark':'light';if(localStorage.getItem('scn-lang')==='en'){document.documentElement.lang='en';document.documentElement.classList.add('i18n-wait');setTimeout(function(){document.documentElement.classList.remove('i18n-wait')},3000)}}catch(e){}</script>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png?v=1.14.0">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=1.14.0">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png?v=1.15.0">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=1.15.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -110,7 +110,7 @@ details summary{cursor:pointer;color:var(--accent);font-size:13px;margin-top:8px
 .f textarea{min-height:70px;resize:vertical}
 .amt-input{font-size:24px!important;font-weight:700;font-variant-numeric:tabular-nums}
 .amt-input.chk{background:#fff6e0!important;border-color:#e0a800!important;box-shadow:0 0 0 2px rgba(224,168,0,.25)}
-.cats{display:flex;flex-wrap:wrap;gap:6px}
+.bankpick{position:relative}.banklist{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:60;max-height:300px;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.18);padding:4px}.banklist .bk{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;border-radius:8px;padding:6px 8px;color:var(--text);font:inherit;cursor:pointer}.banklist .bk:hover,.banklist .bk.on{background:var(--card2)}.banklist .bk img{width:64px;height:30px;object-fit:contain;background:#fff;border-radius:6px;padding:2px;flex:none}.banklist .bk small{color:var(--muted);font-size:11.5px}.banklist .none{padding:10px;color:var(--muted);font-size:13px}.cats{display:flex;flex-wrap:wrap;gap:6px}
 .cats label{display:inline-flex}
 .cats input{position:absolute;opacity:0;pointer-events:none}
 .cats span{padding:6px 10px;border-radius:999px;border:1px solid var(--line);font-size:13px;cursor:pointer;background:var(--bg)}
@@ -877,7 +877,7 @@ html.i18n-wait body{visibility:hidden}
   <a href="#ke-hoach" data-tab="plan"><span class="ic">🎯</span>Kế hoạch</a>
 </nav>
 <div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
-<div class="lock" id="lock"><div class="lockbox"><div class="hd"><div class="logo"><img src="icons/icon-192.png?v=1.14.0" alt=""><span>🔒</span></div><div class="brand">SỔ CÁ NHÂN</div><h2>Đang mở…</h2></div></div></div>
+<div class="lock" id="lock"><div class="lockbox"><div class="hd"><div class="logo"><img src="icons/icon-192.png?v=1.15.0" alt=""><span>🔒</span></div><div class="brand">SỔ CÁ NHÂN</div><h2>Đang mở…</h2></div></div></div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1282,7 +1282,7 @@ const accList = () => Object.entries(S.accounts).map(([id, a]) => ({ id, ...a })
 const accName = id => (S.accounts[id] && S.accounts[id].name) || '(đã xoá)';
 
 // ================= PWA: LƯU TRÊN MÁY (IndexedDB) + ĐỒNG BỘ + TRẠNG THÁI MẠNG =================
-const APP_VER = '1.14.0';
+const APP_VER = '1.15.0';
 const STANDALONE_HOST = /^https?:$/.test(location.protocol); // chạy độc lập qua web (Railway) – không phụ thuộc Claude
 const IDB = { db: null, pending: 0, cfg: { url: '', token: '', auto: true }, lastSync: 0, lastSyncAt: 0, syncing: false, syncErr: '', device: '' };
 function idbOpen() {
@@ -1769,20 +1769,20 @@ async function lockRender() {
   const who = L.id ? `Tài khoản <b>${esc(L.id)}</b>` : 'Tài khoản chủ';
   let h = '';
   if (mode === 'unlock') {
-    h = `<div class="hd"><div class="logo"><img src="icons/icon-192.png?v=1.14.0" alt=""><span>🔒</span></div><div class="brand">SỔ CÁ NHÂN</div><h2>Ứng dụng đã khoá</h2><div class="who">${who}</div></div>${msg}
+    h = `<div class="hd"><div class="logo"><img src="icons/icon-192.png?v=1.15.0" alt=""><span>🔒</span></div><div class="brand">SỔ CÁ NHÂN</div><h2>Ứng dụng đã khoá</h2><div class="who">${who}</div></div>${msg}
       ${(L.creds || []).length && waSupported() ? `<button class="btn primary bio" id="lk-bio">👆 Mở bằng vân tay / Face ID</button><div class="or">hoặc nhập mật khẩu</div>` : ''}
       <form id="lk-form" autocomplete="on"><input type="text" name="username" autocomplete="username" value="${esc(L.id || '')}" hidden>
       <div class="f"><input id="lk-pw" type="password" autocomplete="current-password" placeholder="Mật khẩu"></div><button class="btn ${(L.creds || []).length ? '' : 'primary'}" style="width:100%;justify-content:center" type="submit">Mở khoá</button></form>
       <div class="links"><a id="lk-out">Đăng xuất khỏi máy này</a>${!navigator.onLine ? '<span class="muted">📴 Ngoại tuyến</span>' : ''}</div>`;
   } else if (mode === 'reset') {
-    h = `<div class="hd"><div class="logo"><img src="icons/icon-192.png?v=1.14.0" alt=""><span>🔑</span></div><div class="brand">SỔ CÁ NHÂN</div><h2>Đặt lại mật khẩu</h2><div class="who">Dùng mã SYNC_TOKEN (biến trên Railway) để xác minh là chủ tài khoản</div></div>${msg}
+    h = `<div class="hd"><div class="logo"><img src="icons/icon-192.png?v=1.15.0" alt=""><span>🔑</span></div><div class="brand">SỔ CÁ NHÂN</div><h2>Đặt lại mật khẩu</h2><div class="who">Dùng mã SYNC_TOKEN (biến trên Railway) để xác minh là chủ tài khoản</div></div>${msg}
       <form id="lk-form"><div class="f"><label>Mã SYNC_TOKEN</label><input id="lk-tok" type="password" autocomplete="off" value="${esc(kTok)}"></div>
       <div class="f"><label>Mật khẩu mới (tối thiểu 8 ký tự)</label><input id="lk-pw" type="password" autocomplete="new-password"></div>
       <div class="f"><label>Nhập lại mật khẩu mới</label><input id="lk-pw2" type="password" autocomplete="new-password"></div>
       <button class="btn primary" style="width:100%;justify-content:center" type="submit">Đặt lại & đăng nhập</button></form>
       <div class="links"><a id="lk-back">‹ Quay lại đăng nhập</a></div><p class="muted" style="font-size:12px">Đặt lại mật khẩu sẽ đăng xuất mọi thiết bị.</p>`;
   } else {
-    h = `<div class="hd"><div class="logo"><img src="icons/icon-192.png?v=1.14.0" alt=""><span>🔐</span></div><div class="brand">SỔ CÁ NHÂN</div><h2>Đăng nhập</h2><div class="who">${esc(authBase().replace(/^https?:\/\//, ''))}</div></div>${msg}
+    h = `<div class="hd"><div class="logo"><img src="icons/icon-192.png?v=1.15.0" alt=""><span>🔐</span></div><div class="brand">SỔ CÁ NHÂN</div><h2>Đăng nhập</h2><div class="who">${esc(authBase().replace(/^https?:\/\//, ''))}</div></div>${msg}
       ${st.passkeys && waSupported() ? `<button class="btn primary bio" id="lk-pk">👆 Vân tay / Face ID</button><div class="or">hoặc dùng mật khẩu</div>` : ''}
       <form id="lk-form" autocomplete="on"><div class="f"><input id="lk-id" name="username" autocomplete="username" placeholder="ID hoặc số điện thoại" aria-label="ID hoặc số điện thoại" value="${esc(kId || AUTH.idTyped || L.id || '')}" autocapitalize="none" spellcheck="false"></div>
       <div class="f"><input id="lk-pw" type="password" autocomplete="current-password" placeholder="Mật khẩu" aria-label="Mật khẩu"></div>
@@ -5221,11 +5221,33 @@ function viewAccDetail(id) {
   h += `<div class="item" style="cursor:default"><div class="ic">🏁</div><div class="main"><div class="t1">Số dư đầu</div><div class="t2">${a.openDate ? fmtDate(a.openDate) : ''}</div></div><div class="amt num">${fmt(a.opening)}</div></div></div></div>`;
   return h;
 }
+// ---- Ngân hàng / ví điện tử Việt Nam: danh sách & logo chuẩn (nguồn VietQR, đóng gói trong assets/banks) ----
+let BANKS = null;
+async function banksLoad() { if (BANKS) return BANKS; try { const r = await fetch('assets/banks.json'); BANKS = r.ok ? ((await r.json()).list || []) : []; } catch (e) { BANKS = []; } return BANKS; }
+const bankNorm = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').toLowerCase().replace(/[^a-z0-9]/g, '');
+const bankFind = code => (BANKS || []).find(b => b.c === code);
+const BANK_TYPES = ['bank', 'credit', 'ewallet'];
+function bankSearch(q, type) {
+  const L = BANKS || [], n = bankNorm(q);
+  if (!n) return type === 'ewallet' ? [...L.filter(b => b.w), ...L.filter(b => !b.w)] : L;
+  const sc = b => { const c = bankNorm(b.c), s = bankNorm(b.s), f = bankNorm(b.n); if (c === n || s === n) return 0; if (c.startsWith(n) || s.startsWith(n)) return 1; if (c.includes(n) || s.includes(n)) return 2; if (f.includes(n)) return 3; if (b.b && b.b.startsWith(String(q).trim())) return 4; return 9; };
+  return L.map(b => [sc(b), b]).filter(x => x[0] < 9).sort((a, b) => a[0] - b[0]).map(x => x[1]);
+}
+function bankLogoData(code) { // logo chuẩn → ảnh 96×96 nền trắng, lưu cùng tài khoản như ảnh tự tải
+  return new Promise((res, rej) => {
+    const img = new Image();
+    img.onload = () => { const c = document.createElement('canvas'); c.width = c.height = 96; const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, 96, 96); const r = Math.min(90 / img.width, 80 / img.height), w = img.width * r, h = img.height * r; x.drawImage(img, (96 - w) / 2, (96 - h) / 2, w, h); let d = c.toDataURL('image/png'); if (d.length > 60000) d = c.toDataURL('image/jpeg', .9); res(d); };
+    img.onerror = () => rej(new Error('Không tải được logo'));
+    img.src = 'assets/banks/' + code + '.png';
+  });
+}
 function accForm(id) {
+  if (!BANKS) { banksLoad().then(() => accForm(id)); return; }
   const a = id ? { ...S.accounts[id] } : { name: '', type: 'bank', opening: 0, openDate: today(), number: '' };
   openModal(`<h3>${id ? 'Sửa tài khoản' : 'Thêm tài khoản'}<button class="iconbtn" data-x>✕</button></h3><form id="af">
     <div class="grid2"><div class="f"><label>Tên tài khoản</label><input id="a-name" value="${esc(a.name)}" placeholder="VD: Ngân hàng Vietcombank"></div>
     <div class="f"><label>Loại</label><select id="a-type">${Object.entries(ACC_TYPES).map(([k, [l, i]]) => `<option value="${k}" ${a.type === k ? 'selected' : ''}>${i} ${l}</option>`).join('')}</select></div></div>
+    <div class="f" id="a-bank-f" ${BANK_TYPES.includes(a.type) ? '' : 'hidden'}><label>Ngân hàng / ví điện tử</label><div class="bankpick"><input id="a-bank-q" autocomplete="off" spellcheck="false" placeholder="Gõ tên hoặc mã: VCB, MB, NCB, Techcombank…" value="${esc(a.bank ? ((bankFind(a.bank) || {}).s || a.bank) : '')}"><div id="a-bank-list" class="banklist" hidden></div></div><div class="muted" style="margin-top:4px">Chọn để tự điền tên, ký hiệu và logo chuẩn của ngân hàng.</div></div>
     <div class="f"><label>Số tài khoản (không bắt buộc)</label><input id="a-num" value="${esc(a.number || '')}" inputmode="numeric"></div>
     <div class="f"><label>Ảnh logo (tự tải lên từ máy)</label><div class="row" style="gap:10px;align-items:center"><span id="a-logo-prev">${accMono(a, 44)}</span><label class="btn sm" style="cursor:pointer">📷 Chọn ảnh<input type="file" id="a-logo" accept="image/*" style="display:none"></label><button type="button" class="btn sm" id="a-logo-rm" ${a.logo ? '' : 'style="display:none"'}>Bỏ ảnh</button></div><div class="muted" style="margin-top:4px">Ảnh được thu nhỏ còn 96×96 và lưu cùng tài khoản. Khi không có ảnh, app dùng ký hiệu chữ bên dưới.</div></div>
     <div class="grid2"><div class="f"><label>Ký hiệu hiển thị</label><input id="a-abbr" maxlength="5" value="${esc(a.abbr || '')}" placeholder="Tự động: ${esc(accAbbr({ name: a.name || '' }))}"></div>
@@ -5246,10 +5268,35 @@ function accForm(id) {
       img.src = url;
     });
     sh.querySelector('#a-logo-rm').onclick = () => { logo = ''; prev(); };
+    let bank = a.bank || '', hit = [], cur = 0;
+    const bq = sh.querySelector('#a-bank-q'), bl = sh.querySelector('#a-bank-list');
+    const draw = () => {
+      hit = bankSearch(bq.value, sh.querySelector('#a-type').value).slice(0, 40); cur = 0;
+      bl.innerHTML = hit.length ? hit.map((b, i) => `<button type="button" class="bk${i === cur ? ' on' : ''}" data-c="${esc(b.c)}"><img src="assets/banks/${esc(b.c)}.png" alt="" loading="lazy"><span><b>${esc(b.s)}</b> · ${esc(b.c)}<br><small>${esc(b.n)}</small></span></button>`).join('') : '<div class="none">Không tìm thấy ngân hàng phù hợp.</div>';
+      bl.hidden = false;
+    };
+    const pick = async b => {
+      bank = b.c; bq.value = b.s; bl.hidden = true;
+      const nm = sh.querySelector('#a-name'), ab = sh.querySelector('#a-abbr');
+      if (!nm.value.trim() || BANKS.some(x => x.s === nm.value.trim())) nm.value = b.s;
+      if (!ab.value.trim() || BANKS.some(x => x.c === ab.value.trim())) ab.value = b.c.length <= 5 ? b.c : '';
+      try { logo = await bankLogoData(b.c); } catch (e) { toast('Chưa tải được logo – kiểm tra kết nối rồi chọn lại.'); }
+      prev();
+    };
+    bq.addEventListener('focus', draw); bq.addEventListener('input', () => { if (!bq.value.trim()) bank = ''; draw(); });
+    bq.addEventListener('blur', () => setTimeout(() => { bl.hidden = true; }, 180));
+    bq.addEventListener('keydown', e => {
+      if (bl.hidden || !hit.length) return;
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); cur = (cur + (e.key === 'ArrowDown' ? 1 : hit.length - 1)) % hit.length; bl.querySelectorAll('.bk').forEach((x, i) => x.classList.toggle('on', i === cur)); bl.children[cur].scrollIntoView({ block: 'nearest' }); }
+      else if (e.key === 'Enter') { e.preventDefault(); pick(hit[cur]); }
+      else if (e.key === 'Escape') bl.hidden = true;
+    });
+    bl.addEventListener('mousedown', e => { const x = e.target.closest('.bk'); if (!x) return; e.preventDefault(); pick(bankFind(x.dataset.c)); });
+    sh.querySelector('#a-type').addEventListener('change', e => { sh.querySelector('#a-bank-f').hidden = !BANK_TYPES.includes(e.target.value); });
     sh.querySelectorAll('#a-abbr,#a-name,#a-type,input[name=acol]').forEach(i => i.addEventListener('input', prev));
     sh.querySelector('#af').addEventListener('submit', e => { e.preventDefault(); busy(sh.querySelector('#a-save'), async () => {
       const name = sh.querySelector('#a-name').value.trim(); if (!name) return toast('Nhập tên tài khoản.');
-      await put('accounts', id || genId(), { ...(id ? S.accounts[id] : { order: accList().length, created: Date.now() }), name, type: sh.querySelector('#a-type').value, number: sh.querySelector('#a-num').value.trim(), abbr: sh.querySelector('#a-abbr').value.trim().slice(0, 5), logo, color: (sh.querySelector('input[name=acol]:checked') || {}).value || '', opening: parseAmt(sh.querySelector('#a-open').value), openDate: sh.querySelector('#a-od').value });
+      await put('accounts', id || genId(), { ...(id ? S.accounts[id] : { order: accList().length, created: Date.now() }), name, type: sh.querySelector('#a-type').value, number: sh.querySelector('#a-num').value.trim(), abbr: sh.querySelector('#a-abbr').value.trim().slice(0, 5), logo, bank: BANK_TYPES.includes(sh.querySelector('#a-type').value) ? bank : '', color: (sh.querySelector('input[name=acol]:checked') || {}).value || '', opening: parseAmt(sh.querySelector('#a-open').value), openDate: sh.querySelector('#a-od').value });
       closeModal(); toast('Đã lưu tài khoản.');
     })(); });
     if (id) sh.querySelector('#a-del').onclick = async () => {
