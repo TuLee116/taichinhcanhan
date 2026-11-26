@@ -10,6 +10,7 @@ Mỗi phiên bản là một **nhánh cố định** `phien-ban/vX.Y.Z` trên Gi
 
 | Phiên bản | Ngày | Nội dung | Tải về |
 |---|---|---|---|
+| **v1.14.0** | 2026-11-26 | Nút **Reset toàn bộ dữ liệu** (⚙️ Ứng dụng & dữ liệu): xác thực lại, gõ XOA, tự tải sao lưu trước; lệnh xoá lan sang máy chủ và mọi thiết bị; giữ tài khoản & cài đặt | [code](https://github.com/TuLee116/taichinhcanhan/tree/phien-ban/v1.14.0) · [.zip](https://github.com/TuLee116/taichinhcanhan/archive/refs/heads/phien-ban/v1.14.0.zip) |
 | **v1.13.2** | 2026-11-26 | Chuyển toàn bộ về repo/tên miền của TuLee116: sao lưu GitHub phải đặt `GITHUB_REPO` (không còn mặc định repo khác), ví dụ trong app dùng tên trung tính | [code](https://github.com/TuLee116/taichinhcanhan/tree/phien-ban/v1.13.2) · [.zip](https://github.com/TuLee116/taichinhcanhan/archive/refs/heads/phien-ban/v1.13.2.zip) |
 | **v1.13.1** | 2026-11-26 | Chép nguyên bản 1.13.1 (giao diện Sáng/Tối, Tiếng Việt/English, đăng nhập, sinh trắc, thông báo, đọc ảnh giao dịch, sao lưu GitHub…) | [code](https://github.com/TuLee116/taichinhcanhan/tree/phien-ban/v1.13.1) · [.zip](https://github.com/TuLee116/taichinhcanhan/archive/refs/heads/phien-ban/v1.13.1.zip) |
 | **v1.0.2** | 2026-11-23 | Bản đầu của repo: PWA + font Montserrat + máy chủ đồng bộ gộp | [code](https://github.com/TuLee116/taichinhcanhan/tree/phien-ban/v1.0.2) · [.zip](https://github.com/TuLee116/taichinhcanhan/archive/refs/heads/phien-ban/v1.0.2.zip) |

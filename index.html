@@ -8,8 +8,8 @@
 <meta name="theme-color" content="#1e2a5e">
 <script>/* giao diện & ngôn ngữ đã chọn – áp dụng trước khi vẽ trang */try{var _t=localStorage.getItem('scn-theme')||'light',_d=_t==='dark'||(_t==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.theme=_d?'dark':'light';if(localStorage.getItem('scn-lang')==='en'){document.documentElement.lang='en';document.documentElement.classList.add('i18n-wait');setTimeout(function(){document.documentElement.classList.remove('i18n-wait')},3000)}}catch(e){}</script>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png?v=1.13.2">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=1.13.2">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png?v=1.14.0">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=1.14.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -877,7 +877,7 @@ html.i18n-wait body{visibility:hidden}
   <a href="#ke-hoach" data-tab="plan"><span class="ic">🎯</span>Kế hoạch</a>
 </nav>
 <div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
-<div class="lock" id="lock"><div class="lockbox"><div class="hd"><div class="logo"><img src="icons/icon-192.png?v=1.13.2" alt=""><span>🔒</span></div><div class="brand">SỔ CÁ NHÂN</div><h2>Đang mở…</h2></div></div></div>
+<div class="lock" id="lock"><div class="lockbox"><div class="hd"><div class="logo"><img src="icons/icon-192.png?v=1.14.0" alt=""><span>🔒</span></div><div class="brand">SỔ CÁ NHÂN</div><h2>Đang mở…</h2></div></div></div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1282,7 +1282,7 @@ const accList = () => Object.entries(S.accounts).map(([id, a]) => ({ id, ...a })
 const accName = id => (S.accounts[id] && S.accounts[id].name) || '(đã xoá)';
 
 // ================= PWA: LƯU TRÊN MÁY (IndexedDB) + ĐỒNG BỘ + TRẠNG THÁI MẠNG =================
-const APP_VER = '1.13.2';
+const APP_VER = '1.14.0';
 const STANDALONE_HOST = /^https?:$/.test(location.protocol); // chạy độc lập qua web (Railway) – không phụ thuộc Claude
 const IDB = { db: null, pending: 0, cfg: { url: '', token: '', auto: true }, lastSync: 0, lastSyncAt: 0, syncing: false, syncErr: '', device: '' };
 function idbOpen() {
@@ -1544,6 +1544,53 @@ async function downloadBackup() {
   try { saveTextFile(name, txt); toast('Đã tạo tệp ' + name); if (MODE === 'idb') idbSet('meta', 'lastBackup', Date.now()).catch(() => { }); }
   catch (e) { navigator.clipboard && navigator.clipboard.writeText(txt).then(() => toast('Đã sao chép dữ liệu sao lưu vào bộ nhớ tạm.')).catch(() => toast('Không tạo được tệp sao lưu.')); }
 }
+// ---- Reset dữ liệu: xoá mọi mục ở mọi mảng; đã đồng bộ thì lệnh xoá lan sang máy chủ và mọi thiết bị ----
+// Giữ lại: tài khoản đăng nhập, cấu hình đồng bộ, vân tay, giao diện & ngôn ngữ, các cài đặt (danh mục thu chi, mục tiêu học…).
+const RESET_KEEP_SETTINGS = new Set(['main', 'english', 'learn', 'rem', 'reviews', 'events', 'health', 'samples2']);
+function resetTargets() {
+  const out = [];
+  for (const c of COLS) for (const id of Object.keys(S[c] || {})) if (!(c === 'settings' && RESET_KEEP_SETTINGS.has(id))) out.push([c, id]);
+  return out;
+}
+async function resetAllData() {
+  if (MODE !== 'idb') return toast('Chỉ reset được khi dữ liệu lưu trên máy.');
+  const items = resetTargets();
+  if (!items.length) return toast('Không có dữ liệu nào để xoá.');
+  if (!(await localStepUp('Reset toàn bộ dữ liệu'))) return;
+  const synced = !!IDB.cfg.url;
+  const ok = await new Promise(res => openModal(`<h3>🧹 Reset toàn bộ dữ liệu</h3>
+    <p>Xoá <b>${items.length.toLocaleString('vi-VN')}</b> mục ở mọi mảng: tài chính, sức khỏe, lịch, học tập, kế hoạch, ghi chú, danh bạ…</p>
+    <div class="banner">${synced ? '⚠️ Máy này đang đồng bộ: dữ liệu bị xoá <b>trên máy chủ và mọi thiết bị</b> khi chúng đồng bộ.' : 'Máy này chưa đồng bộ: chỉ xoá dữ liệu trên máy này.'}</div>
+    <p class="muted" style="font-size:12.5px">Vẫn giữ: tài khoản đăng nhập, máy chủ đồng bộ, vân tay, giao diện & ngôn ngữ, danh mục thu chi và các cài đặt.</p>
+    <label class="check"><input type="checkbox" id="rs-bk" checked> Tải tệp sao lưu (.json) trước khi xoá</label>
+    <div class="f" style="margin-top:10px"><label>Gõ <b>XOA</b> để xác nhận</label><input id="rs-txt" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XOA"></div>
+    <div class="actions"><button type="button" class="btn" id="rs-no">Huỷ</button><button type="button" class="btn danger" id="rs-yes" disabled>Xoá toàn bộ</button></div>`, sh => {
+    const q = x => sh.querySelector(x), btn = q('#rs-yes');
+    q('#rs-txt').oninput = e => { btn.disabled = e.target.value.trim().toUpperCase() !== 'XOA'; };
+    q('#rs-no').onclick = () => { closeModal(); res(null); };
+    btn.onclick = () => { const bk = q('#rs-bk').checked; closeModal(); res({ bk }); };
+  }));
+  if (!ok) return;
+  if (ok.bk) {
+    try { saveTextFile('so-ca-nhan-truoc-reset-' + today() + '.json', JSON.stringify(backupObj(), null, 1)); await idbSet('meta', 'lastBackup', Date.now()); }
+    catch (e) { if (!(await confirmDlg('Không tạo được tệp sao lưu. Vẫn xoá?', 'Vẫn xoá'))) return; }
+  }
+  const now = Date.now(), list = resetTargets();
+  // Ghi tất cả dấu xoá trong MỘT giao dịch IndexedDB (nhanh, không dở dang)
+  await idbReq(['docs', 'outbox', 'files'], 'readwrite', t => {
+    const ds = t.objectStore('docs'), ob = t.objectStore('outbox');
+    for (const [col, id] of list) { ds.put({ col, id, del: true, ts: now }, col + '/' + id); ob.add({ op: 'del', col, id, data: null, ts: now }); }
+    if (!(S.settings && S.settings.samples2 && S.settings.samples2.done)) { // không tự nạp lại dữ liệu mẫu sau khi reset
+      const v = { done: true, at: now }; ds.put({ col: 'settings', id: 'samples2', data: v, ts: now }, 'settings/samples2'); ob.add({ op: 'put', col: 'settings', id: 'samples2', data: v, ts: now });
+    }
+    t.objectStore('files').clear(); // ảnh giao dịch đính kèm trên máy này
+  });
+  for (const [col, id] of list) { DOC_TS[col + '/' + id] = now; if (S[col]) { const m = { ...S[col] }; delete m[id]; S[col] = m; } }
+  if (!(S.settings.samples2 && S.settings.samples2.done)) { S.settings = { ...S.settings, samples2: { done: true, at: now } }; DOC_TS['settings/samples2'] = now; }
+  UI.loanId = null; UI.accId = null;
+  IDB.pending = await idbCount('outbox'); netUI(); queueRender(); schedSync(200);
+  toast('Đã xoá ' + list.length.toLocaleString('vi-VN') + ' mục.' + (synced ? ' Đang đồng bộ lệnh xoá…' : ''));
+}
 async function restoreBackup(file, mode) {
   let o; try { o = JSON.parse(await file.text()); } catch (e) { return toast('Tệp không đúng định dạng.'); }
   if (!o || !o.data) return toast('Tệp không phải bản sao lưu Sổ Cá Nhân.');
@@ -1573,6 +1620,7 @@ async function sysForm() {
     ${MODE === 'idb' && IDB.cfg.url ? `<div class="f"><label>🔔 Thông báo đẩy (dữ liệu mới từ thiết bị khác · sao lưu hằng tuần)</label><div class="muted" id="sys-push" style="font-size:12.5px">Đang kiểm tra…</div><div class="actions" style="justify-content:flex-start;margin:6px 0 0;flex-wrap:wrap"><button type="button" class="btn sm primary" id="sys-pon" hidden>🔔 Bật thông báo</button><button type="button" class="btn sm" id="sys-ptest" hidden>Gửi thử</button><button type="button" class="btn sm" id="sys-poff" hidden>Tắt</button></div></div>
     <div class="f"><label>🗄️ Sao lưu hằng tuần lên GitHub</label><div class="muted" id="sys-bk" style="font-size:12.5px">Đang kiểm tra…</div><div class="actions" style="justify-content:flex-start;margin:6px 0 0"><button type="button" class="btn sm" id="sys-bkrun" hidden>🗄️ Sao lưu ngay</button></div></div>` : ''}
     <div class="f"><label>💾 Sao lưu & khôi phục</label><div class="actions" style="justify-content:flex-start;flex-wrap:wrap;margin:0">${MODE === 'idb' && IDB.cfg.url ? '<button type="button" class="btn sm" id="sys-srvexp">☁️ Tải bản sao máy chủ</button>' : ''}<button type="button" class="btn sm" id="sys-exp">📤 Tải tệp sao lưu (.json)</button><label class="btn sm" style="cursor:pointer">📥 Khôi phục từ tệp<input type="file" id="sys-imp" accept=".json,application/json" hidden></label></div><label class="check" style="margin-top:6px;font-size:12.5px"><input type="checkbox" id="sys-rep"> Thay thế toàn bộ dữ liệu hiện có (mặc định: gộp thêm)</label></div>
+    ${MODE === 'idb' ? '<div class="f"><label>🧹 Reset dữ liệu</label><div class="muted" style="font-size:12.5px">Xoá toàn bộ dữ liệu để bắt đầu lại từ đầu (giữ tài khoản & cài đặt).</div><div class="actions" style="justify-content:flex-start;margin:6px 0 0"><button type="button" class="btn sm danger" id="sys-reset">Reset toàn bộ dữ liệu…</button></div></div>' : ''}
     <div class="muted" style="font-size:12px">Phiên bản ${APP_VER}${est ? ' · ' + est : ''}</div>
     <div class="actions"><button type="button" class="btn" data-x>Đóng</button></div>`, sh => {
     sh.querySelectorAll('[data-x]').forEach(b => b.onclick = closeModal);
@@ -1582,6 +1630,7 @@ async function sysForm() {
     if (q('#sys-sync')) q('#sys-sync').onclick = () => syncNow(true);
     if (q('#sys-off')) q('#sys-off').onclick = async () => { IDB.cfg = { ...IDB.cfg, url: '' }; await idbSet('meta', 'sync', IDB.cfg); rtStop(); periodicSyncSetup(); netUI(); closeModal(); toast('Đã tắt đồng bộ. Dữ liệu vẫn lưu trên máy.'); };
     q('#sys-exp').onclick = downloadBackup;
+    if (q('#sys-reset')) q('#sys-reset').onclick = () => { closeModal(); resetAllData(); };
     if (q('#sys-srvexp')) q('#sys-srvexp').onclick = downloadServerBackup;
     if (q('#sys-acct')) sysAcctUI();
     if (q('#sys-pon')) { q('#sys-pon').onclick = pushEnable; q('#sys-poff').onclick = pushDisable; q('#sys-ptest').onclick = pushTest; pushStatusUI(); }
@@ -1720,20 +1769,20 @@ async function lockRender() {
   const who = L.id ? `Tài khoản <b>${esc(L.id)}</b>` : 'Tài khoản chủ';
   let h = '';
   if (mode === 'unlock') {
-    h = `<div class="hd"><div class="logo"><img src="icons/icon-192.png?v=1.13.2" alt=""><span>🔒</span></div><div class="brand">SỔ CÁ NHÂN</div><h2>Ứng dụng đã khoá</h2><div class="who">${who}</div></div>${msg}
+    h = `<div class="hd"><div class="logo"><img src="icons/icon-192.png?v=1.14.0" alt=""><span>🔒</span></div><div class="brand">SỔ CÁ NHÂN</div><h2>Ứng dụng đã khoá</h2><div class="who">${who}</div></div>${msg}
       ${(L.creds || []).length && waSupported() ? `<button class="btn primary bio" id="lk-bio">👆 Mở bằng vân tay / Face ID</button><div class="or">hoặc nhập mật khẩu</div>` : ''}
       <form id="lk-form" autocomplete="on"><input type="text" name="username" autocomplete="username" value="${esc(L.id || '')}" hidden>
       <div class="f"><input id="lk-pw" type="password" autocomplete="current-password" placeholder="Mật khẩu"></div><button class="btn ${(L.creds || []).length ? '' : 'primary'}" style="width:100%;justify-content:center" type="submit">Mở khoá</button></form>
       <div class="links"><a id="lk-out">Đăng xuất khỏi máy này</a>${!navigator.onLine ? '<span class="muted">📴 Ngoại tuyến</span>' : ''}</div>`;
   } else if (mode === 'reset') {
-    h = `<div class="hd"><div class="logo"><img src="icons/icon-192.png?v=1.13.2" alt=""><span>🔑</span></div><div class="brand">SỔ CÁ NHÂN</div><h2>Đặt lại mật khẩu</h2><div class="who">Dùng mã SYNC_TOKEN (biến trên Railway) để xác minh là chủ tài khoản</div></div>${msg}
+    h = `<div class="hd"><div class="logo"><img src="icons/icon-192.png?v=1.14.0" alt=""><span>🔑</span></div><div class="brand">SỔ CÁ NHÂN</div><h2>Đặt lại mật khẩu</h2><div class="who">Dùng mã SYNC_TOKEN (biến trên Railway) để xác minh là chủ tài khoản</div></div>${msg}
       <form id="lk-form"><div class="f"><label>Mã SYNC_TOKEN</label><input id="lk-tok" type="password" autocomplete="off" value="${esc(kTok)}"></div>
       <div class="f"><label>Mật khẩu mới (tối thiểu 8 ký tự)</label><input id="lk-pw" type="password" autocomplete="new-password"></div>
       <div class="f"><label>Nhập lại mật khẩu mới</label><input id="lk-pw2" type="password" autocomplete="new-password"></div>
       <button class="btn primary" style="width:100%;justify-content:center" type="submit">Đặt lại & đăng nhập</button></form>
       <div class="links"><a id="lk-back">‹ Quay lại đăng nhập</a></div><p class="muted" style="font-size:12px">Đặt lại mật khẩu sẽ đăng xuất mọi thiết bị.</p>`;
   } else {
-    h = `<div class="hd"><div class="logo"><img src="icons/icon-192.png?v=1.13.2" alt=""><span>🔐</span></div><div class="brand">SỔ CÁ NHÂN</div><h2>Đăng nhập</h2><div class="who">${esc(authBase().replace(/^https?:\/\//, ''))}</div></div>${msg}
+    h = `<div class="hd"><div class="logo"><img src="icons/icon-192.png?v=1.14.0" alt=""><span>🔐</span></div><div class="brand">SỔ CÁ NHÂN</div><h2>Đăng nhập</h2><div class="who">${esc(authBase().replace(/^https?:\/\//, ''))}</div></div>${msg}
       ${st.passkeys && waSupported() ? `<button class="btn primary bio" id="lk-pk">👆 Vân tay / Face ID</button><div class="or">hoặc dùng mật khẩu</div>` : ''}
       <form id="lk-form" autocomplete="on"><div class="f"><input id="lk-id" name="username" autocomplete="username" placeholder="ID hoặc số điện thoại" aria-label="ID hoặc số điện thoại" value="${esc(kId || AUTH.idTyped || L.id || '')}" autocapitalize="none" spellcheck="false"></div>
       <div class="f"><input id="lk-pw" type="password" autocomplete="current-password" placeholder="Mật khẩu" aria-label="Mật khẩu"></div>

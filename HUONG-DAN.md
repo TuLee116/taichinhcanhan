@@ -57,6 +57,15 @@ Làm **một lần trên mỗi thiết bị**:
 
 **Chuyển dữ liệu cũ từ bản trong Claude (nếu có):** mở bản trong Claude → nút trạng thái → **Tải tệp sao lưu (.json)** → mở app Railway → nút trạng thái → **Khôi phục từ tệp** → dữ liệu tự đồng bộ lên máy chủ.
 
+## 3b. Reset toàn bộ dữ liệu (từ bản 1.14.0)
+Dùng khi muốn **bắt đầu lại từ đầu** (VD bàn giao app cho khách, xoá dữ liệu thử): nút trạng thái → ⚙️ **Ứng dụng & dữ liệu** → **🧹 Reset dữ liệu** → **Reset toàn bộ dữ liệu…**
+- Đã bật tài khoản: phải **xác thực lại** (vân tay / Face ID hoặc mật khẩu).
+- Mặc định **tự tải tệp sao lưu (.json)** trước khi xoá; phải **gõ `XOA`** thì nút **Xoá toàn bộ** mới bấm được.
+- Xoá **mọi mục ở mọi mảng** (tài chính, sức khỏe, lịch, học tập, kế hoạch, ghi chú, danh bạ…) và ảnh giao dịch lưu trên máy này.
+- Máy đang đồng bộ: lệnh xoá gửi lên **máy chủ** và **mọi thiết bị** nhận khi đồng bộ (máy đang tắt sẽ xoá khi mở lại) – không bị máy khác gửi dữ liệu cũ lên lại.
+- **Giữ nguyên:** tài khoản đăng nhập, máy chủ đồng bộ, vân tay, giao diện & ngôn ngữ, danh mục thu chi và các cài đặt. Dữ liệu mẫu **không** tự nạp lại.
+- Lỡ tay: **Khôi phục từ tệp** bằng tệp `so-ca-nhan-truoc-reset-…json` vừa tải.
+
 ## 4. Khi mất mạng
 - Vẫn xem, thêm, sửa, xoá mọi thứ như bình thường. Dữ liệu lưu ngay trên máy (IndexedDB).
 - Góc trên hiện **🔴 Ngoại tuyến · n thay đổi chờ đồng bộ**, kèm thanh thông báo đỏ.
