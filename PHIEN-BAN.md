@@ -10,14 +10,13 @@ Mỗi phiên bản là một **nhánh cố định** `phien-ban/vX.Y.Z` trên Gi
 
 | Phiên bản | Ngày | Nội dung | Tải về |
 |---|---|---|---|
+| **v1.13.2** | 2026-11-26 | Chuyển toàn bộ về repo/tên miền của TuLee116: sao lưu GitHub phải đặt `GITHUB_REPO` (không còn mặc định repo khác), ví dụ trong app dùng tên trung tính | [code](https://github.com/TuLee116/taichinhcanhan/tree/phien-ban/v1.13.2) · [.zip](https://github.com/TuLee116/taichinhcanhan/archive/refs/heads/phien-ban/v1.13.2.zip) |
 | **v1.13.1** | 2026-11-26 | Chép nguyên bản 1.13.1 (giao diện Sáng/Tối, Tiếng Việt/English, đăng nhập, sinh trắc, thông báo, đọc ảnh giao dịch, sao lưu GitHub…) | [code](https://github.com/TuLee116/taichinhcanhan/tree/phien-ban/v1.13.1) · [.zip](https://github.com/TuLee116/taichinhcanhan/archive/refs/heads/phien-ban/v1.13.1.zip) |
 | **v1.0.2** | 2026-11-23 | Bản đầu của repo: PWA + font Montserrat + máy chủ đồng bộ gộp | [code](https://github.com/TuLee116/taichinhcanhan/tree/phien-ban/v1.0.2) · [.zip](https://github.com/TuLee116/taichinhcanhan/archive/refs/heads/phien-ban/v1.0.2.zip) |
 
-## Lịch sử bản gốc (repo ducptclaude/Sotaycanhan)
+## Lịch sử phát triển trước khi chuyển vào repo này
 
-Bản 1.13.1 ở trên được chép từ repo gốc; các phiên bản trước đó chỉ có ở đó:
-
-| Phiên bản | Ngày | Commit | Nội dung |
+| Phiên bản | Ngày | Commit gốc | Nội dung |
 |---|---|---|---|
 | v1.13.1 | 2026-11-25 | `da0d9b0` | Sửa ngôn ngữ & màu giao diện tối |
 | v1.13.0 | 2026-11-25 | `a1044e9` | Giao diện Sáng/Tối + Tiếng Việt/English |
@@ -60,5 +59,5 @@ Tải `.zip` của phiên bản ở bảng trên → giải nén → `npm instal
 - **v1.13.1** lưu trên máy chủ ở bảng `scn_store`; **v1.0.2** lưu ở bảng `docs`. Hai bản không đọc dữ liệu máy chủ của nhau:
   - Lên 1.13.1 lần đầu: máy chủ trống → các thiết bị **tự gửi lại toàn bộ dữ liệu** (đã kiểm tra 26/11/2026).
   - Quay về 1.0.2: máy chủ chỉ còn dữ liệu cũ trước khi lên 1.13.1 → trước khi quay về, hãy **Tải tệp sao lưu (.json)** trên máy có dữ liệu mới nhất, sau đó **Khôi phục từ tệp**.
-- Quay về bản **trước 1.12.0** (repo gốc): khoá Face ID / vân tay gắn máy trên điện thoại sẽ không dùng được → đăng nhập bằng mật khẩu.
+- Quay về bản **trước 1.12.0**: khoá Face ID / vân tay gắn máy trên điện thoại sẽ không dùng được → đăng nhập bằng mật khẩu.
 - Trên điện thoại, mở app 1–2 lần để Service Worker nhận đúng phiên bản (chân màn đăng nhập hiện `v…`).

@@ -4,7 +4,7 @@
    - Kèm SHA-256 của dữ liệu gốc + "chuỗi băm" nối các tuần (chain = SHA-256(chain tuần trước + sha256 tuần này)):
      sửa / xoá / chèn bất kỳ bản sao lưu nào đều làm chuỗi sai → phát hiện được (xem server/kiem-tra-sao-luu.js).
    - Repo đang CÔNG KHAI → dữ liệu luôn được mã hoá. Khoá: BACKUP_KEY (nếu có), nếu không dùng SYNC_TOKEN.
-   Biến môi trường: GITHUB_TOKEN (bắt buộc để bật) · GITHUB_REPO (mặc định ducptclaude/Sotaycanhan)
+   Biến môi trường: GITHUB_TOKEN (bắt buộc để bật) · GITHUB_REPO (bắt buộc, VD TuLee116/taichinhcanhan – mỗi khách một repo riêng)
                     BACKUP_BRANCH (mặc định sao-luu-du-lieu) · BACKUP_KEY · BACKUP_WEEKDAY (0=CN…6=T7, mặc định 0) · BACKUP_HOUR (giờ VN, mặc định 20)
    Đường dẫn (cần mã SYNC_TOKEN): GET /admin/backup/status · POST /admin/backup/run */
 const crypto = require('crypto');
@@ -33,13 +33,13 @@ function decrypt(env, secret) {
 }
 const sha256 = b => crypto.createHash('sha256').update(b).digest('hex');
 
-function createBackup({ store, sync, push, token = process.env.GITHUB_TOKEN || '', repo = process.env.GITHUB_REPO || 'ducptclaude/Sotaycanhan',
+function createBackup({ store, sync, push, token = process.env.GITHUB_TOKEN || '', repo = process.env.GITHUB_REPO || '',
   branch = process.env.BACKUP_BRANCH || 'sao-luu-du-lieu', secret = process.env.BACKUP_KEY || process.env.SYNC_TOKEN || '',
   weekday = Number(process.env.BACKUP_WEEKDAY || 0), hour = Number(process.env.BACKUP_HOUR || 20), api = process.env.GITHUB_API || 'https://api.github.com' }) {
   let st = {}; try { st = JSON.parse(store.get('backup-state')) || {}; } catch (e) { }
   const saveSt = () => store.set('backup-state', JSON.stringify(st));
   if (!st.remindAt && !st.lastAt) { st.remindAt = Date.now(); saveSt(); } // lần chạy đầu: không nhắc ngay, đợi mốc tuần kế tiếp
-  const enabled = !!(token && secret);
+  const enabled = !!(token && secret && repo);
   let running = null;
 
   async function gh(method, p, body) {
@@ -65,7 +65,7 @@ function createBackup({ store, sync, push, token = process.env.GITHUB_TOKEN || '
   }
 
   async function run(reason = 'manual') {
-    if (!enabled) throw new Error(!token ? 'Chưa đặt GITHUB_TOKEN trên máy chủ' : 'Chưa có khoá mã hoá (SYNC_TOKEN/BACKUP_KEY)');
+    if (!enabled) throw new Error(!token ? 'Chưa đặt GITHUB_TOKEN trên máy chủ' : !repo ? 'Chưa đặt GITHUB_REPO trên máy chủ (VD TuLee116/taichinhcanhan)' : 'Chưa có khoá mã hoá (SYNC_TOKEN/BACKUP_KEY)');
     if (running) return running;
     running = (async () => {
       sync.flush();

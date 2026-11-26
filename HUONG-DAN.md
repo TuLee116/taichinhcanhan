@@ -25,15 +25,16 @@ Cách nhanh nhất, miễn phí:
 Cách khác: GitHub Pages, Cloudflare Pages, Vercel. Chỉ cần đưa nguyên các tệp lên.
 
 ## 1b. Chạy trên Railway (app + đồng bộ cùng một địa chỉ) – đang dùng
-Địa chỉ: **https://sotaycanhan-production.up.railway.app** · Vùng: **Southeast Asia (Singapore)**.
+Địa chỉ: **https://taichinhcanhan-production.up.railway.app** · Vùng: **Southeast Asia (Singapore)**.
 Repo có sẵn `server.js`, `package.json`, `railway.json`: Railway tự cài thư viện và chạy `node server.js`.
 
-### Biến môi trường trên Railway (dịch vụ Sotaycanhan → Variables)
+### Biến môi trường trên Railway (dịch vụ taichinhcanhan → Variables)
 | Biến | Bắt buộc | Ý nghĩa |
 |---|---|---|
 | `SYNC_TOKEN` | ✅ | Mã đồng bộ (nhập vào app trên từng thiết bị). Chưa đặt → đồng bộ tắt. |
 | `DATABASE_URL` | ✅ khuyên dùng | `${{Postgres.DATABASE_URL}}` – lưu dữ liệu vào Postgres, **không mất khi triển khai lại**. Không có thì cần Volume `/data`. |
 | `GITHUB_TOKEN` | Tuỳ chọn | Bật **sao lưu hằng tuần lên GitHub** (xem mục 6). |
+| `GITHUB_REPO` | Cùng `GITHUB_TOKEN` | Repo nhận bản sao lưu, VD `TuLee116/taichinhcanhan`. Bắt buộc khi bật sao lưu – **mỗi khách đặt repo riêng của khách**. |
 | `BACKUP_KEY` | Tuỳ chọn | Khoá mã hoá bản sao lưu. Không đặt thì dùng `SYNC_TOKEN` – **nên đặt riêng** để đổi `SYNC_TOKEN` không ảnh hưởng bản sao cũ. |
 | `BACKUP_WEEKDAY`, `BACKUP_HOUR` | Tuỳ chọn | Lịch sao lưu (mặc định Chủ nhật 20 giờ, giờ Việt Nam; 0 = Chủ nhật … 6 = Thứ 7). |
 
@@ -49,7 +50,7 @@ Trước khi đổi: app → nút trạng thái → **☁️ Tải bản sao má
 
 ## 3. Kết nối thiết bị với máy chủ Railway
 Làm **một lần trên mỗi thiết bị**:
-1. Mở app qua `https://sotaycanhan-production.up.railway.app` (nên cài vào màn hình chính).
+1. Mở app qua `https://taichinhcanhan-production.up.railway.app` (nên cài vào màn hình chính).
 2. Bấm nút trạng thái ở góc trên → mục **🔄 Máy chủ đồng bộ (URL + mã SYNC_TOKEN)**.
 3. Ô địa chỉ đã **điền sẵn** địa chỉ máy chủ → nhập **mã SYNC_TOKEN** → **Lưu & đồng bộ**.
 4. Thấy **🟢 Đã đồng bộ** là xong. Thiết bị mới sẽ nhận toàn bộ dữ liệu từ máy chủ; dữ liệu mẫu trên máy mới **không đè** dữ liệu thật.
@@ -129,7 +130,7 @@ Máy chủ tự sao lưu mỗi tuần vào nhánh **`sao-luu-du-lieu`** của re
 - `danh-muc.json`: mỗi bản có **SHA-256** của dữ liệu + **chuỗi băm** nối các tuần → sửa, xoá hay chèn bất kỳ bản nào đều bị phát hiện.
 
 **Bật (một lần):**
-1. GitHub → Settings → Developer settings → **Fine-grained tokens** → Generate new token: Repository access = **Only select repositories → Sotaycanhan**; Permissions → **Contents: Read and write**; đặt hạn dùng (VD 1 năm).
+1. GitHub → Settings → Developer settings → **Fine-grained tokens** → Generate new token: Repository access = **Only select repositories → taichinhcanhan**; Permissions → **Contents: Read and write**; đặt hạn dùng (VD 1 năm).
 2. Railway → Variables → thêm `GITHUB_TOKEN` = token vừa tạo (và nên thêm `BACKUP_KEY` = một mã ngẫu nhiên dài, **lưu cẩn thận** – mất là không giải mã được).
 3. App → nút trạng thái → **🗄️ Sao lưu ngay** để chạy thử.
 
@@ -193,7 +194,7 @@ Thu hồi một máy (VD bị mất) → máy đó bị đăng xuất, **không 
 - Web không phân biệt được "vân tay" với "mã PIN / hình vẽ khoá màn hình" của thiết bị: cả hai đều là xác thực người dùng của thiết bị.
 
 **Lưu ý:**
-- Vân tay / Face ID gắn với tên miền `sotaycanhan-production.up.railway.app`. Đổi sang tên miền khác thì cần bật lại vân tay (mật khẩu vẫn dùng được).
+- Vân tay / Face ID gắn với tên miền `taichinhcanhan-production.up.railway.app`. Đổi sang tên miền khác thì cần bật lại vân tay (mật khẩu vẫn dùng được).
 - iPhone/iPad: Face ID / Touch ID hoạt động trong Safari và app đã thêm vào MH chính (iOS 16+).
 - Khoá app là **khoá màn hình**: dữ liệu trên máy không bị mã hoá. Mất máy → vào máy khác → **Thu hồi** máy đó (máy mất sẽ không đồng bộ được nữa).
 

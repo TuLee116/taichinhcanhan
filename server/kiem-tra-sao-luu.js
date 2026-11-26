@@ -9,7 +9,7 @@
 const fs = require('fs'), path = require('path');
 const { decrypt, sha256 } = require('./backup');
 const arg = k => { const i = process.argv.indexOf(k); return i > 0 ? process.argv[i + 1] : undefined; };
-const repo = arg('--repo') || 'ducptclaude/Sotaycanhan', branch = arg('--nhanh') || 'sao-luu-du-lieu', dir = arg('--thu-muc');
+const repo = arg('--repo') || process.env.GITHUB_REPO || 'TuLee116/taichinhcanhan', branch = arg('--nhanh') || 'sao-luu-du-lieu', dir = arg('--thu-muc');
 const keyFile = arg('--khoa-tep'), exp = arg('--xuat');
 const secret = keyFile ? fs.readFileSync(keyFile, 'utf8').trim() : (process.env.SAO_LUU_KHOA || '');
 
