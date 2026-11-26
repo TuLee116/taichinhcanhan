@@ -1,55 +1,16 @@
-# Máy chủ – Sổ Cá Nhân
+# Máy chủ đồng bộ (tuỳ chọn)
 
-Một service Node duy nhất làm hai việc trên cùng một địa chỉ:
+> Muốn **app + đồng bộ trên cùng một địa chỉ** (VD Railway): dùng `server.js` ở thư mục gốc – xem mục 1b trong `HUONG-DAN.md`. Tệp `sync-server.js` ở đây chỉ chạy phần đồng bộ.
 
-- **Phục vụ app**: `index.html`, `sw.js`, `manifest.webmanifest`, `icons/`, `fonts/` (có nén gzip, ETag).
-  Chỉ các tệp này được phục vụ; mã server, `package.json`, `.git` đều không truy cập được.
-- **Đồng bộ dữ liệu**: `POST /sync`, lưu vào PostgreSQL.
+Chỉ cần khi muốn dùng **chung dữ liệu trên nhiều thiết bị**. Không có máy chủ, ứng dụng vẫn chạy đầy đủ và lưu dữ liệu trên từng máy.
 
-App vẫn chạy đầy đủ khi chưa bật đồng bộ; dữ liệu lúc đó chỉ nằm trên từng máy.
-
-## Deploy trên Railway
-
-Service `taichinhcanhan` (nối GitHub repo này) trong project có Postgres:
-
-1. **Settings → Source → Root Directory**: để **trống** (thư mục gốc repo). Railway thấy `package.json` và chạy `npm start`.
-2. **Variables**:
-
-   | Tên | Giá trị |
-   |---|---|
-   | `DATABASE_URL` | `${{Postgres.DATABASE_URL}}` |
-   | `SYNC_TOKEN` | mã ngẫu nhiên, tối thiểu 32 ký tự (xem dưới) |
-   | `ALLOWED_ORIGINS` | (tuỳ chọn) địa chỉ khác được gọi `/sync`; app cùng địa chỉ luôn được phép |
-
-3. **Settings → Deploy → Healthcheck Path**: `/health`.
-4. Trong app trên từng máy: ⚙️ → Máy chủ đồng bộ → địa chỉ = **chính địa chỉ app** (vd. `https://taichinhcanhan-production.up.railway.app`), mã = `SYNC_TOKEN` → **Lưu & đồng bộ**.
-   Làm trên máy có dữ liệu thật trước.
-
-Tạo mã ngẫu nhiên (PowerShell), giữ kín, không dán vào chat:
-
-```powershell
-$b = New-Object byte[] 32; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); [Convert]::ToBase64String($b)
+```bash
+SYNC_TOKEN=dat-mot-ma-bi-mat-dai PORT=8787 node sync-server.js
 ```
 
-## Chạy trên máy
-
-```powershell
-$env:DATABASE_URL = "postgres://..."; $env:SYNC_TOKEN = "<mã>"; npm install; npm start
-```
-
-## Giao thức
-
-`POST /sync` với `Authorization: Bearer <SYNC_TOKEN>`
-
-- Gửi: `{ device, since, ops: [{ op: "put"|"del", col, id, data, ts }] }`
-- Nhận: `{ now, changes: [{ col, id, data, del, ts }] }`
-
-Xung đột giữa hai máy: bản sửa sau (theo `ts`) thắng. Mục đã xoá được giữ dấu xoá để máy khác cũng xoá theo.
-
-`GET /health` – kiểm tra server và kết nối database.
-
-## Bảo mật
-
-- Sai mã → 401; một IP sai quá 20 lần trong 15 phút → 429. Đúng mã luôn được vào.
-- Gọi `/sync` từ trang web khác chỉ được khi địa chỉ đó nằm trong `ALLOWED_ORIGINS`.
-- Đổi mã: sửa `SYNC_TOKEN` trên Railway rồi nhập mã mới trong app ở từng máy.
+- Yêu cầu Node.js 18 trở lên, không cần cài thêm thư viện.
+- Dữ liệu lưu trong `data.json` cạnh tệp. Nhớ sao lưu tệp này định kỳ.
+- Phải chạy sau **HTTPS**, vì trang HTTPS không gọi được máy chủ HTTP. Có thể dùng Render, Railway, Fly.io, VPS + Caddy/Nginx…
+- Trong app, bấm nút trạng thái ở góc trên → **Máy chủ đồng bộ** → nhập địa chỉ + mã `SYNC_TOKEN` → **Lưu & đồng bộ**.
+- Khi hai máy cùng sửa một mục, bản sửa sau cùng được giữ (last-write-wins).
+- Nếu tệp dữ liệu bị xoá/tạo mới, máy chủ báo `reset` và các thiết bị tự gửi lại toàn bộ dữ liệu (kể cả mục đã xoá).

@@ -1,16 +1,20 @@
 {
   "name": "so-ca-nhan",
-  "version": "1.0.2",
+  "version": "1.13.1",
   "private": true,
-  "description": "Sổ Cá Nhân – app PWA kèm máy chủ đồng bộ (Node + PostgreSQL)",
-  "type": "module",
+  "description": "Sổ Cá Nhân – ứng dụng PWA + máy chủ đồng bộ (không cần thư viện ngoài)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
   "engines": {
     "node": ">=20"
   },
-  "scripts": {
-    "start": "node server/index.js"
-  },
   "dependencies": {
-    "pg": "8.13.1"
+    "@simplewebauthn/server": "13.3.3",
+    "@tesseract.js-data/vie": "1.0.0",
+    "pg": "8.13.1",
+    "tesseract.js": "7.0.0",
+    "web-push": "3.6.7"
   }
 }
