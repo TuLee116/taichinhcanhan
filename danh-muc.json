@@ -1,0 +1,20 @@
+{
+ "app": "so-ca-nhan",
+ "mo_ta": "Danh mục sao lưu – mỗi dòng 1 tuần. chain = SHA-256(chain trước + sha256).",
+ "ban_sao": [
+  {
+   "stt": 1,
+   "tuan": "2026-W48",
+   "luc": "2026-11-26T02:24:51.586Z",
+   "tep": "sao-luu/2026/2026-W48-0001.json.enc",
+   "so_muc": 139,
+   "seq": 140,
+   "epoch": "48bb0f4588244f0e",
+   "sha256": "771755fcd691175d59bf9835668b1d15fccdb1325749f2df01c6c80964a25306",
+   "truoc": "",
+   "chain": "0ca99bd0e8b9b30cca8c22a913999c2822c6bdf13136d1cedfe99892bdbf4ec8",
+   "khoa": "84e3824e098b",
+   "ly_do": "manual"
+  }
+ ]
+}
